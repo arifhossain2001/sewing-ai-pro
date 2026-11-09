@@ -1,0 +1,304 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10283d">
+<title>Sewing AI Pro</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #eef2f6;
+  color: #172b3a;
+}
+
+header {
+  background: #10283d;
+  color: white;
+  padding: 23px 18px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 25px;
+}
+
+header p {
+  color: #b9cfdf;
+  font-size: 12px;
+}
+
+main {
+  max-width: 650px;
+  margin: 22px auto;
+  padding: 0 14px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 3px 15px #0000000d;
+}
+
+h2 { font-size: 19px; }
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin: 15px 0 7px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cbd5df;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+}
+
+textarea {
+  min-height: 105px;
+  resize: vertical;
+}
+
+button {
+  width: 100%;
+  border: 0;
+  border-radius: 9px;
+  padding: 14px;
+  margin-top: 16px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary {
+  background: #147d61;
+  color: white;
+}
+
+.secondary {
+  background: #183d58;
+  color: white;
+}
+
+#result {
+  display: none;
+  margin-top: 20px;
+  padding: 15px;
+  background: #f0f7f4;
+  border-radius: 10px;
+}
+
+#prompt {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.notice {
+  margin-top: 18px;
+  padding: 12px;
+  background: #fff4df;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+footer {
+  text-align: center;
+  color: #718096;
+  font-size: 12px;
+  padding: 25px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>⚙ SEWING AI PRO</h1>
+  <p>UNIVERSAL INDUSTRIAL SEWING MACHINE ASSISTANT</p>
+</header>
+
+<main>
+<section class="card">
+
+<h2>Machine Troubleshooting</h2>
+<p>Enter your machine details and describe the problem.</p>
+
+<label>Machine Brand</label>
+<select id="brand">
+  <option value="">Select Brand</option>
+  <option>JUKI</option>
+  <option>Brother</option>
+  <option>Pegasus</option>
+  <option>Kansai Special</option>
+  <option>Typical</option>
+  <option>Jack</option>
+  <option>Siruba</option>
+  <option>Other</option>
+</select>
+
+<label>Machine Model</label>
+<input id="model" placeholder="Example: JUKI DDL-8700">
+
+<label>Machine Type</label>
+<select id="type">
+  <option>Lockstitch</option>
+  <option>Overlock</option>
+  <option>Interlock</option>
+  <option>Buttonhole</option>
+  <option>Bartack</option>
+  <option>Feed-off-the-arm</option>
+  <option>Other</option>
+</select>
+
+<label>Problem Category</label>
+<select id="category">
+  <option>Stitch Problem</option>
+  <option>Thread Breaking</option>
+  <option>Needle Problem</option>
+  <option>Motor Problem</option>
+  <option>Error Code</option>
+  <option>Oil / Lubrication</option>
+  <option>Electrical Problem</option>
+  <option>Mechanical Problem</option>
+  <option>Other</option>
+</select>
+
+<label>Error Code (Optional)</label>
+<input id="error" placeholder="Example: E-07">
+
+<label>Describe Your Problem</label>
+<textarea id="problem"
+placeholder="Describe what happens, when it happens and what you have already checked..."></textarea>
+
+<label>Manual Reference (Optional)</label>
+<input id="manual" placeholder="Manual name or page number">
+
+<button class="primary" onclick="generateDiagnosis()">
+GENERATE DIAGNOSTIC PROMPT
+</button>
+
+<div id="result">
+  <h3>Diagnostic Request Generated</h3>
+  <div id="prompt"></div>
+  <button class="secondary" onclick="copyPrompt()">
+    COPY DIAGNOSTIC REQUEST
+  </button>
+  <button class="primary" onclick="openChatGPT()">
+    OPEN CHATGPT
+  </button>
+  <p id="status"></p>
+</div>
+
+<div class="notice">
+  ⚠ SAFETY: Turn off and disconnect machine power
+  before permitted inspection. Never open electrical
+  panels or adjust hazardous moving mechanisms while
+  powered. Refer electrical work to a qualified technician.
+</div>
+
+</section>
+</main>
+
+<footer>
+  SEWING AI PRO · VERSION 1.0<br>
+  Built for Industrial Sewing Machine Technicians
+</footer>
+
+<script>
+let currentPrompt = "";
+
+function generateDiagnosis() {
+  const brand = document.getElementById("brand").value;
+  const model = document.getElementById("model").value.trim();
+  const type = document.getElementById("type").value;
+  const category = document.getElementById("category").value;
+  const error = document.getElementById("error").value.trim();
+  const problem = document.getElementById("problem").value.trim();
+  const manual = document.getElementById("manual").value.trim();
+
+  if (!brand || !model || !problem) {
+    alert("Please enter Brand, Model and Problem Description.");
+    return;
+  }
+
+  currentPrompt = `
+You are Sewing AI Pro, an expert industrial sewing
+machine technical troubleshooting assistant.
+
+MACHINE INFORMATION:
+Brand: ${brand}
+Model: ${model}
+Type: ${type}
+
+PROBLEM INFORMATION:
+Category: ${category}
+Error Code: ${error || "Not provided"}
+Description: ${problem}
+
+MANUAL REFERENCE:
+${manual || "Not provided"}
+
+YOUR TASK:
+1. Identify the reported problem.
+2. Explain possible causes in Bangla.
+3. Separate confirmed facts from hypotheses.
+4. Provide safe diagnostic checks in sequence.
+5. Suggest corrective actions only when supported
+   by reliable technical information.
+6. Ask for missing information when necessary.
+7. Identify the relevant official manual or page.
+8. Never invent error codes, specifications or settings.
+9. For electrical hazards, refer to a qualified technician.
+
+Use simple Bangla with English technical terms
+in brackets.
+
+RESPONSE FORMAT:
+- Problem Identification
+- Possible Causes
+- Diagnostic Checks
+- Recommended Solution
+- Safety Warning
+- Technical Manual Reference
+`;
+
+  document.getElementById("prompt").textContent = currentPrompt;
+  document.getElementById("result").style.display = "block";
+  document.getElementById("status").textContent = "";
+}
+
+async function copyPrompt() {
+  if (!currentPrompt) return;
+
+  try {
+    await navigator.clipboard.writeText(currentPrompt);
+    document.getElementById("status").textContent =
+      "Diagnostic request copied successfully!";
+  } catch (e) {
+    document.getElementById("status").textContent =
+      "Copy unavailable. Please select and copy the text manually.";
+  }
+}
+
+function openChatGPT() {
+  if (!currentPrompt) return;
+  window.open("https://chatgpt.com/", "_blank");
+}
+</script>
+
+</body>
+</html>
